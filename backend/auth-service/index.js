@@ -30,35 +30,31 @@ app.use(helmet());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Log all incoming requests
-app.use((req, res, next) => {
-  // eslint-disable-next-line no-console
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
-
-app.use('/auth', authRoutes);
-
-// Health check - simple and fast, no MongoDB dependency
+// Health check - MUST be first route for Railway health checks
 app.get('/health', (req, res) => {
   // eslint-disable-next-line no-console
   console.log(`[${new Date().toISOString()}] Health check called from ${req.ip}`);
-  res.status(200).json({ 
-    status: 'ok', 
-    service: 'auth-service',
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: 'ok', service: 'auth-service' });
 });
 
 // Root endpoint for testing
 app.get('/', (req, res) => {
   // eslint-disable-next-line no-console
-  console.log('Root endpoint called');
+  console.log(`[${new Date().toISOString()}] Root endpoint called from ${req.ip}`);
   res.json({ message: 'Auth service is running', port: PORT });
 });
 
-// Start server first, then connect to MongoDB
-app.listen(PORT, '0.0.0.0', () => {
+// Log all incoming requests
+app.use((req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] INCOMING REQUEST: ${req.method} ${req.path} from ${req.ip}`);
+  next();
+});
+
+app.use('/auth', authRoutes);
+
+// Start server
+const server = app.listen(PORT, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`========================================`);
   // eslint-disable-next-line no-console
@@ -68,9 +64,11 @@ app.listen(PORT, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`Server is ready to accept connections`);
   // eslint-disable-next-line no-console
+  console.log(`Listening on 0.0.0.0:${PORT}`);
+  // eslint-disable-next-line no-console
   console.log(`========================================`);
   
-  // Connect to MongoDB
+  // Connect to MongoDB after server starts
   mongoose
     .connect(MONGO_URI)
     .then(() => {
@@ -83,6 +81,13 @@ app.listen(PORT, '0.0.0.0', () => {
       // eslint-disable-next-line no-console
       console.error('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
     });
+});
+
+// Handle server errors
+server.on('error', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('Server error:', err);
+  process.exit(1);
 });
 
 // Handle uncaught errors
