@@ -38,9 +38,11 @@ app.get('/health', (req, res) => {
 });
 
 // Start server first, then connect to MongoDB
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`Content service running on port ${PORT}`);
+  // eslint-disable-next-line no-console
+  console.log('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
   
   // Connect to MongoDB
   mongoose
@@ -58,4 +60,15 @@ app.listen(PORT, () => {
       // eslint-disable-next-line no-console
       console.error('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
     });
+});
+
+// Handle uncaught errors
+process.on('uncaughtException', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
