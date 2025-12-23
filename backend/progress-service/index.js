@@ -11,7 +11,7 @@ const progressRoutes = require('./routes/progress');
 
 const app = express();
 
-const PORT = process.env.PORT || process.env.AUTH_PORT || 5001;
+const PORT = process.env.PORT || process.env.PROGRESS_PORT || 5003;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/dsa_sheet_progress';
 
 app.use(helmet());
@@ -26,25 +26,33 @@ app.use(morgan('dev'));
 app.use('/progress', progressRoutes);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'progress-service' });
+  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({ 
+    status: 'ok', 
+    service: 'progress-service',
+    mongodb: mongoStatus
+  });
 });
 
-mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log('Progress service connected to MongoDB');
-    app.listen(PORT, () => {
+// Start server first, then connect to MongoDB
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Progress service running on port ${PORT}`);
+  
+  // Connect to MongoDB
+  mongoose
+    .connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
+    .then(() => {
       // eslint-disable-next-line no-console
-      console.log(`Progress service running on port ${PORT}`);
+      console.log('Progress service connected to MongoDB');
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('Progress service MongoDB connection error', err);
+      // eslint-disable-next-line no-console
+      console.error('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
     });
-  })
-  .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Progress service MongoDB connection error', err);
-  });
-
-
+});
