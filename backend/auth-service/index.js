@@ -17,18 +17,31 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/dsa_sheet_
 // Trust proxy - required for Railway
 app.set('trust proxy', true);
 
-app.use(helmet());
+// CORS before other middleware
 app.use(
   cors({
-    origin: '*'
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
+
+app.use(helmet());
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Log all incoming requests
+app.use((req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
 
 app.use('/auth', authRoutes);
 
 app.get('/health', (req, res) => {
+  // eslint-disable-next-line no-console
+  console.log('Health check called');
   const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.json({ 
     status: 'ok', 
@@ -37,19 +50,29 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Root endpoint for testing
+app.get('/', (req, res) => {
+  // eslint-disable-next-line no-console
+  console.log('Root endpoint called');
+  res.json({ message: 'Auth service is running', port: PORT });
+});
+
 // Start server first, then connect to MongoDB
 app.listen(PORT, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
+  console.log(`========================================`);
+  // eslint-disable-next-line no-console
   console.log(`Auth service running on port ${PORT}`);
   // eslint-disable-next-line no-console
-  console.log('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
+  console.log(`MONGO_URI: ${MONGO_URI ? 'Set (' + MONGO_URI.substring(0, 20) + '...)' : 'Not set'}`);
+  // eslint-disable-next-line no-console
+  console.log(`Server is ready to accept connections`);
+  // eslint-disable-next-line no-console
+  console.log(`========================================`);
   
   // Connect to MongoDB
   mongoose
-    .connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
+    .connect(MONGO_URI)
     .then(() => {
       // eslint-disable-next-line no-console
       console.log('Auth service connected to MongoDB');
