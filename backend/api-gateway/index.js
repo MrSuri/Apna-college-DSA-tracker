@@ -49,9 +49,23 @@ function authenticateToken(req, res, next) {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
+    // eslint-disable-next-line no-console
+    console.log('Register request received, forwarding to:', `${AUTH_SERVICE_URL}/auth/register`);
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/register`, req.body);
+    // eslint-disable-next-line no-console
+    console.log('Auth service responded with status:', response.status);
     res.status(response.status).json(response.data);
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Auth service register error:', err.message);
+    // eslint-disable-next-line no-console
+    console.error('Error code:', err.code);
+    // eslint-disable-next-line no-console
+    console.error('Error response:', err.response?.data);
+    if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
+      // eslint-disable-next-line no-console
+      console.error('Cannot connect to auth service at:', AUTH_SERVICE_URL);
+    }
     const status = err.response?.status || 500;
     res.status(status).json(err.response?.data || { message: 'Auth service error' });
   }
@@ -111,9 +125,22 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'api-gateway' });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error:', err);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
+});
+
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API Gateway running on port ${PORT}`);
+  // eslint-disable-next-line no-console
+  console.log('AUTH_SERVICE_URL:', AUTH_SERVICE_URL);
+  // eslint-disable-next-line no-console
+  console.log('CONTENT_SERVICE_URL:', CONTENT_SERVICE_URL);
+  // eslint-disable-next-line no-console
+  console.log('PROGRESS_SERVICE_URL:', PROGRESS_SERVICE_URL);
 });
 
 
