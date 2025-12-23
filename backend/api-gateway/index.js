@@ -15,23 +15,32 @@ const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL || 'http://localhost
 const PROGRESS_SERVICE_URL = process.env.PROGRESS_SERVICE_URL || 'http://localhost:5003';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_change_me';
 
+// Trust proxy - required for Railway and other cloud platforms
 app.set('trust proxy', true);
 
-app.use(helmet());
+// Configure CORS before other middleware
 app.use(
   cors({
-    origin: '*', // adjust in production
-    credentials: true
+    origin: true, // Allow all origins - will reflect the request origin
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
   })
 );
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip trust proxy validation for Railway/proxy environments
   validate: {
     trustProxy: false
   }
@@ -72,7 +81,7 @@ app.post('/api/auth/register', async (req, res) => {
       console.error('Cannot connect to auth service at:', AUTH_SERVICE_URL);
     }
     const status = err.response?.status || 500;
-    res.status(status).json(err.response?.data || { message: 'Auth service error' });
+    res.status(status).json(err.response?.data || { message: 'Auth service error', details: err.message });
   }
 });
 
@@ -81,8 +90,10 @@ app.post('/api/auth/login', async (req, res) => {
     const response = await axios.post(`${AUTH_SERVICE_URL}/auth/login`, req.body);
     res.status(response.status).json(response.data);
   } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Auth service login error:', err.message);
     const status = err.response?.status || 500;
-    res.status(status).json(err.response?.data || { message: 'Auth service error' });
+    res.status(status).json(err.response?.data || { message: 'Auth service error', details: err.message });
   }
 });
 
@@ -147,5 +158,3 @@ app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log('PROGRESS_SERVICE_URL:', PROGRESS_SERVICE_URL);
 });
-
-
