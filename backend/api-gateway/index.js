@@ -10,9 +10,19 @@ require('dotenv').config();
 const app = express();
 
 const PORT = process.env.PORT || 5000;
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
-const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL || 'http://localhost:5002';
-const PROGRESS_SERVICE_URL = process.env.PROGRESS_SERVICE_URL || 'http://localhost:5003';
+
+// Helper function to ensure URLs have protocol
+function ensureProtocol(url, defaultProtocol = 'https://') {
+  if (!url) return url;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  return `${defaultProtocol}${url}`;
+}
+
+const AUTH_SERVICE_URL = ensureProtocol(process.env.AUTH_SERVICE_URL) || 'http://localhost:5001';
+const CONTENT_SERVICE_URL = ensureProtocol(process.env.CONTENT_SERVICE_URL) || 'http://localhost:5002';
+const PROGRESS_SERVICE_URL = ensureProtocol(process.env.PROGRESS_SERVICE_URL) || 'http://localhost:5003';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_change_me';
 
 // Trust proxy - required for Railway and other cloud platforms
