@@ -14,6 +14,9 @@ const app = express();
 const PORT = process.env.PORT || process.env.PROGRESS_PORT || 5003;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/dsa_sheet_progress';
 
+// Trust proxy - required for Railway
+app.set('trust proxy', true);
+
 app.use(helmet());
 app.use(
   cors({
