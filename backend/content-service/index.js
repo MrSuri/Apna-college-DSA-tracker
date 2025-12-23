@@ -11,7 +11,7 @@ const topicsRoute = require('./routes/topics');
 
 const app = express();
 
-const PORT = process.env.CONTENT_PORT || 5002;
+const PORT = process.env.PORT || process.env.AUTH_PORT || 5002;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/dsa_sheet_content';
 
 app.use(helmet());
