@@ -11,7 +11,7 @@ const progressRoutes = require('./routes/progress');
 
 const app = express();
 
-const PORT = process.env.PROGRESS_PORT || 5003;
+const PORT = process.env.PORT || process.env.AUTH_PORT || 5001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/dsa_sheet_progress';
 
 app.use(helmet());
