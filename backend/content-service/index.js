@@ -38,7 +38,7 @@ app.get('/health', (req, res) => {
 });
 
 // Start server first, then connect to MongoDB
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Content service running on port ${PORT}`);
   // eslint-disable-next-line no-console
@@ -72,3 +72,5 @@ process.on('unhandledRejection', (reason, promise) => {
   // eslint-disable-next-line no-console
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+
