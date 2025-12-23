@@ -38,7 +38,7 @@ app.get('/health', (req, res) => {
 });
 
 // Start server first, then connect to MongoDB
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Progress service running on port ${PORT}`);
   // eslint-disable-next-line no-console
