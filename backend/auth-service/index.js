@@ -26,25 +26,33 @@ app.use(morgan('dev'));
 app.use('/auth', authRoutes);
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'auth-service' });
+  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({ 
+    status: 'ok', 
+    service: 'auth-service',
+    mongodb: mongoStatus
+  });
 });
 
-mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log('Auth service connected to MongoDB');
-    app.listen(PORT, () => {
+// Start server first, then connect to MongoDB
+app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Auth service running on port ${PORT}`);
+  
+  // Connect to MongoDB
+  mongoose
+    .connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
+    .then(() => {
       // eslint-disable-next-line no-console
-      console.log(`Auth service running on port ${PORT}`);
+      console.log('Auth service connected to MongoDB');
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('Auth service MongoDB connection error', err);
+      // eslint-disable-next-line no-console
+      console.error('MONGO_URI:', MONGO_URI ? 'Set' : 'Not set');
     });
-  })
-  .catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Auth service MongoDB connection error', err);
-  });
-
-
+});
