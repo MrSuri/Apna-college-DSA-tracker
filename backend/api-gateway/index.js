@@ -15,6 +15,8 @@ const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL || 'http://localhost
 const PROGRESS_SERVICE_URL = process.env.PROGRESS_SERVICE_URL || 'http://localhost:5003';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret_jwt_key_change_me';
 
+app.set('trust proxy', true);
+
 app.use(helmet());
 app.use(
   cors({
