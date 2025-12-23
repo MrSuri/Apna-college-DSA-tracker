@@ -151,6 +151,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'api-gateway' });
 });
 
+// 404 handler for debugging
+app.use((req, res) => {
+  // eslint-disable-next-line no-console
+  console.log('404 - Route not found:', req.method, req.path);
+  res.status(404).json({ message: 'Route not found', path: req.path, method: req.method });
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
   // eslint-disable-next-line no-console
