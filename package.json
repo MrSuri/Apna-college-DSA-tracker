@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "cd backend/api-gateway && npm install",
+    "start": "cd backend/api-gateway && npm start",
     "start:gateway": "cd backend/api-gateway && npm start",
     "start:auth": "cd backend/auth-service && npm start",
     "start:content": "cd backend/content-service && npm start",
