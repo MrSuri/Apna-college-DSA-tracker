@@ -39,14 +39,14 @@ app.use((req, res, next) => {
 
 app.use('/auth', authRoutes);
 
+// Health check - simple and fast, no MongoDB dependency
 app.get('/health', (req, res) => {
   // eslint-disable-next-line no-console
-  console.log('Health check called');
-  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.json({ 
+  console.log(`[${new Date().toISOString()}] Health check called from ${req.ip}`);
+  res.status(200).json({ 
     status: 'ok', 
     service: 'auth-service',
-    mongodb: mongoStatus
+    timestamp: new Date().toISOString()
   });
 });
 
